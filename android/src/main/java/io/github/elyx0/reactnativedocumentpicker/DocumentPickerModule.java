@@ -40,6 +40,7 @@ public class DocumentPickerModule extends ReactContextBaseJavaModule {
 	private static final String E_INVALID_DATA_RETURNED = "INVALID_DATA_RETURNED";
 	private static final String E_UNEXPECTED_EXCEPTION = "UNEXPECTED_EXCEPTION";
 
+	private static final String OPTION_CREATE = "isCreate";
 	private static final String OPTION_TYPE = "type";
 	private static final String OPTION_MULIPLE = "multiple";
 
@@ -99,14 +100,29 @@ public class DocumentPickerModule extends ReactContextBaseJavaModule {
 		this.promise = promise;
 
 		try {
-			Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+			boolean isCreate = !args.isNull(OPTION_CREATE) && args.getBoolean(OPTION_CREATE);
+
+			Intent intent;
+			if(isCreate)
+			{
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+					intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+				} else {
+					intent = new Intent(Intent.ACTION_GET_CONTENT);
+					Log.e(NAME, "Create Document not supported below API level 19");
+				}
+			}
+			else
+				intent = new Intent(Intent.ACTION_GET_CONTENT);
 			intent.addCategory(Intent.CATEGORY_OPENABLE);
 
 			intent.setType("*/*");
 			if (!args.isNull(OPTION_TYPE)) {
 				ReadableArray types = args.getArray(OPTION_TYPE);
 				if (types.size() > 1) {
-					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+					if (isCreate) {
+						Log.e(NAME, "Cannot save multiple file types");
+					} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 						String[] mimeTypes = readableArrayToStringArray(types);
 						intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
 					} else {

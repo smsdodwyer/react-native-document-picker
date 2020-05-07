@@ -121,6 +121,7 @@ export default class DocumentPicker {
     const options = {
       ...opts,
       multiple: false,
+      isCreate: false,
     };
 
     return pick(options).then(results => results[0]);
@@ -130,9 +131,20 @@ export default class DocumentPicker {
     const options = {
       ...opts,
       multiple: true,
+      isCreate: false,
     };
 
     return pick(options);
+  }
+
+  static create(opts) {
+    const options = {
+      ...opts,
+      multiple: false,
+      isCreate: true,
+    };
+
+    return pick(options).then(results => results[0]);
   }
 
   static isCancel(err) {
